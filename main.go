@@ -66,14 +66,12 @@ func main() {
 		fmt.Println("Enter number of tickets: ")
 		fmt.Scan(&userTickets)
 
-		if userTickets > remainingTickets {
-			fmt.Printf("We only have %v tickets remaining, so you can't book %v tickets\n", remainingTickets, userTickets)
-			//if this is true we need to end the program
-			// it will break the loop
-			// break
-			//continue statement causes to skip remainder of its body
-			continue // it means continue the next iteration in the loop
+		//user input validation
+		isValidName := len(firstName) >= 2 && len(lastName) >= 2
+		isValidEmail := strings.Contains(email, "@")
+		isValidTicketNumber := userTickets > 0 && userTickets <= remainingTickets
 
+		if isValidName && isValidEmail && isValidTicketNumber {
 			//Book ticket logic
 			remainingTickets = remainingTickets - userTickets
 			//slices
@@ -109,7 +107,25 @@ func main() {
 
 			}
 
-		}
+		} else {
+			if !isValidName {
+				fmt.Println("firt name or last you entered is too short")
+			}
+			if !isValidEmail {
+				fmt.Println("email address you entered doesn't contain @ sign")
+			}
+			if !isValidTicketNumber {
+				fmt.Println("number of tickets you entered is invalid")
 
+			}
+			// fmt.Printf("We only have %v tickets remaining, so you can't book %v tickets\n", remainingTickets, userTickets)
+			//if this is true we need to end the program
+			// it will break the loop
+			// break
+			//continue statement causes to skip remainder of its body
+			// continue // it means continue the next iteration in the loop
+
+		}
 	}
+
 }
