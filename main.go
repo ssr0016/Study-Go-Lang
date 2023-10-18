@@ -22,6 +22,8 @@ package main
 import (
 	"booking-app/helper"
 	"fmt"
+	"sync"
+	"time"
 	// "strconv"
 )
 
@@ -58,63 +60,63 @@ type UserData struct {
 	numberOfTickets uint
 }
 
+var wg = sync.WaitGroup{}
+
 func main() {
 
 	//Greetings
 	//Paramenters > conferenceName, conferenceTickets, remainingTickets
 	greetUsers()
 
-	//loops
-	for { //infinite loops
+	//Get user input... function
+	firstName, lastName, email, userTickets := getUserInput()
 
-		//Get user input... function
-		firstName, lastName, email, userTickets := getUserInput()
+	//Validate the user input using a function
+	isValidName, isValidEmail, isValidTicketNumber := helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets)
 
-		//Validate the user input using a function
-		isValidName, isValidEmail, isValidTicketNumber := helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets)
+	if isValidName && isValidEmail && isValidTicketNumber {
 
-		if isValidName && isValidEmail && isValidTicketNumber {
+		//function for Booking
+		bookTicket(userTickets, firstName, lastName, email)
 
-			//function for Booking
-			bookTicket(userTickets, firstName, lastName, email)
-			sendTicket(userTickets, firstName, lastName, email)
+		wg.Add(1) // add function is for increasing the thread
+		//concurrent... while generating tickets it will proceed to  the next block of code, it will continue without interuption
+		go sendTicket(userTickets, firstName, lastName, email)
 
-			//call function get & print first names
-			firstNames := getFirstName()
-			fmt.Printf("The first names of bookings are:  %v\n", firstNames)
+		//call function get & print first names
+		firstNames := getFirstName()
+		fmt.Printf("The first names of bookings are:  %v\n", firstNames)
 
-			//check if there is an available tickets... if else statement
-			// var noTicketsRemaining bool = remainingTickets == 0
-			//alternative systax
-			noTicketsRemaining := remainingTickets == 0
-			if noTicketsRemaining {
-				//end program logic
-				fmt.Println("Our conference is booked out. Come back next year.")
-				//break is breaking the loop
-				break
-
-			}
-
-		} else {
-			if !isValidName {
-				fmt.Println("firt name or last you entered is too short")
-			}
-			if !isValidEmail {
-				fmt.Println("email address you entered doesn't contain @ sign")
-			}
-			if !isValidTicketNumber {
-				fmt.Println("number of tickets you entered is invalid")
-			}
-			// fmt.Printf("We only have %v tickets remaining, so you can't book %v tickets\n", remainingTickets, userTickets)
-			//if this is true we need to end the program
-			// it will break the loop
-			// break
-			//continue statement causes to skip remainder of its body
-			// continue // it means continue the next iteration in the loop
+		//check if there is an available tickets... if else statement
+		// var noTicketsRemaining bool = remainingTickets == 0
+		//alternative systax
+		noTicketsRemaining := remainingTickets == 0
+		if noTicketsRemaining {
+			//end program logic
+			fmt.Println("Our conference is booked out. Come back next year.")
 
 		}
+
+	} else {
+		if !isValidName {
+			fmt.Println("firt name or last you entered is too short")
+		}
+		if !isValidEmail {
+			fmt.Println("email address you entered doesn't contain @ sign")
+		}
+		if !isValidTicketNumber {
+			fmt.Println("number of tickets you entered is invalid")
+		}
+		// fmt.Printf("We only have %v tickets remaining, so you can't book %v tickets\n", remainingTickets, userTickets)
+		//if this is true we need to end the program
+		// it will break the loop
+		// break
+		//continue statement causes to skip remainder of its body
+		// continue // it means continue the next iteration in the loop
+
 	}
 
+	wg.Wait()
 }
 
 // the function must be called insede the main function because the main function is the entry point
@@ -200,10 +202,13 @@ func bookTicket(userTickets uint, firstName string, lastName string, email strin
 
 // simulate sending ticket on email address
 func sendTicket(userTickets uint, firstName string, lastName string, email string) {
+	time.Sleep(50 * time.Second)
 	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, firstName, lastName)
 	fmt.Println("################################")
-	fmt.Printf("Sending ticket:\n %v \nto email address %v\n", ticket, email)
+	fmt.Printf("Sending ticket:\n%v \nto email address %v\n", ticket, email)
 	fmt.Println("################################")
+
+	wg.Done()
 }
 
 // //Switch Statement
